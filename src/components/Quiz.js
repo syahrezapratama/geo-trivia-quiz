@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import arrayShuffle from 'array-shuffle';
 import { nanoid } from 'nanoid';
+import Question from './Question';
 
 export default function Quiz() {
 
@@ -45,12 +46,22 @@ export default function Quiz() {
     
     console.log(allQuestions);
 
+    const questions = allQuestions.map(question => {
+        return (
+            <Question 
+                key={question.questionId}
+                questionId={question.questionId}
+                question={question.question}
+                correctAnswer={question.correctAnswer}
+                options={question.options}
+            />
+        )
+    })
+
     return(
         <div className='quizScreen'>
             <h1 className='title'>Geo Trivia Quiz</h1>
-            <div className='questionContainer'>
-                
-            </div>
+            {questions}
             <button className='button'>Check answers</button>
         </div>
     );
