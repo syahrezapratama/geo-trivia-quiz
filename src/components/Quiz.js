@@ -2,12 +2,16 @@ import React, { useEffect, useState } from 'react';
 import arrayShuffle from 'array-shuffle';
 import { nanoid } from 'nanoid';
 import Question from './Question';
-import Option from './Option';
+import Spinner from './Spinner';
 
 export default function Quiz() {
 
     const [allQuestions, setAllQuestions] = useState([]);
-    const [answers, setAnswers] = useState();
+    const [allAnswers, setAllAnswers] = useState([]);
+    const [formData, setFormData] = useState([]);
+    const [gameIsFinished, setGameIsFinished] = useState(false);
+    const [score, setScore] = useState(0);
+    const [newGame, setNewGame] = useState(false);
 
 
     // Fetch data from API and get questions
@@ -17,100 +21,102 @@ export default function Quiz() {
                 const res = await fetch('https://opentdb.com/api.php?amount=5&category=22&difficulty=easy&type=multiple');
                 const toJSON = await res.json();
                 const resultData = toJSON.results;
-                setAllQuestions(makeQuestions(resultData));
+                setAllQuestions(resultData);
             } catch (error) {
                 console.log(error);
             }
         }
         getQuestions();
-    }, []);
+    }, [newGame]);
 
-    // destructure question objects
-    function makeQuestions(questionsArr) {
-        const questions = [];
-        // randomize options
-        for (let i = 0; i < questionsArr.length; i++) {
+    useEffect(() => {
+        allQuestions.forEach(question => {
             const optionsArr = [];
-            optionsArr.push(
-                questionsArr[i].correct_answer, 
-                ...questionsArr[i].incorrect_answers
-            );
-            const shuffledOptions = arrayShuffle([
-                {
-                    id: nanoid(),
-                    option: optionsArr[0],
-                    isSelected: false,
-                    isCorrectAnswer: true
-                },
-                {
-                    id: nanoid(),
-                    option: optionsArr[1],
-                    isSelected: false,
-                    isCorrectAnswer: false
-                },
-                {
-                    id: nanoid(),
-                    option: optionsArr[2],
-                    isSelected: false,
-                    isCorrectAnswer: false
-                },
-                {
-                    id: nanoid(),
-                    option: optionsArr[3],
-                    isSelected: false,
-                    isCorrectAnswer: false
-                }
-            ]);
-            questions.push({
-                questionId: nanoid(),
-                question: questionsArr[i].question,
-                correctAnswer: questionsArr[i].correct_answer,
-                options: shuffledOptions
-            })
-        }
-        return questions;
-    }
-    
-    function selectAnswer(option) {
-        option.isSelected = true;
-        console.log(option.isSelected);
+            optionsArr.push(question.correct_answer, ... question.incorrect_answers);
+            const shuffledOptions = arrayShuffle(optionsArr);
+
+            setAllAnswers(prevAnswers => {
+                return [...prevAnswers, shuffledOptions];
+            });
+
+            setFormData(prevFormData => {
+                return [...prevFormData, ''];
+            });
+        });
+    }, [allQuestions]);
+
+    function handleChange(event, index) {
+        const { value } = event.target;
+        setFormData(prevFormData => {
+            const dataArray = [...prevFormData];
+            dataArray.splice(index, 1, value);
+            return dataArray;
+        });
     }
 
-    const questions = allQuestions.map(question => {
+    function handleClick() {
+        if(!gameIsFinished) {
+            setGameIsFinished(true);
+            allQuestions.forEach((question, index) => {
+                if(formData[index] === question.correct_answer) {
+                    setScore(prevScore => prevScore + 1);
+                }
+            });
+        }
+        // reset score and show new questions
+        else {
+            setGameIsFinished(false);
+            setScore(0);
+            setAllQuestions([]);
+            setAllAnswers([]);
+            setFormData([]);
+            setNewGame(prevState => !prevState);
+        }
+    }
+
+    const questionElements = allQuestions.map(function(_, index) {
+        // only return question elements if the answers are ready
+        if (!allAnswers) {
+            return;
+        }
         return (
-            <div className='questionBox' key={question.questionId}>
-                <Question
-                    questionId={question.questionId}
-                    question={question.question}
-                    correctAnswer={question.correctAnswer}      
-                />
-                <div className='optionsContainer'>
+            <Question
+                question={allQuestions[index]}
+                questionIndex={index}
+                answers={allAnswers[index]}
+                gameIsFinished={gameIsFinished}
+                formData={formData[index]}
+                handleChange={(event) => handleChange(event, index)}
+                key={nanoid()}
+            />
+        );
+    });
+    
+    // console.log(allQuestions);
+    // console.log(allQuestions, allAnswers);
+
+    if (allAnswers.length > 0) {
+        return (
+            <div className='quizScreen'>
+                <h1 className='title'>Geo Trivia Quiz</h1>
+                {questionElements}
+                <div className='resultContainer'>
                     {
-                        question.options.map(option => {
-                            return (
-                                <Option
-                                    key={option.id}
-                                    option={option.option}
-                                    isSelected={option.isSelected}
-                                    selectAnswer={() => selectAnswer(option)}
-                                />
-                            );
-                        })
+                        gameIsFinished && 
+                        <p>
+                            You scored {score} / 5 correct answers!
+                        </p>
                     }
+                    <button className='button' onClick={handleClick}>
+                        {!gameIsFinished ? 'Check answers' : "Play again"}
+                    </button>
                 </div>
                 
             </div>
-            
-        )
-    });
-
-    console.log(allQuestions);
-
-    return(
-        <div className='quizScreen'>
-            <h1 className='title'>Geo Trivia Quiz</h1>
-            {questions}
-            <button className='button'>Check answers</button>
-        </div>
-    );
+        );
+    }
+    else {
+        return <Spinner />
+    }
+    
 }
