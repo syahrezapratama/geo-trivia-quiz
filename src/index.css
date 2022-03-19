@@ -42,7 +42,6 @@ body {
   border-radius: 10px;
   cursor: pointer;
   padding: 0 30px;
-  letter-spacing: 1px;
 }
 
 .quizScreen {
@@ -86,5 +85,10 @@ body {
   cursor: pointer;
   font-size: 0.9rem;
   margin-right: 10px;
+  text-align: center;
+}
 
+.isSelected {
+  background-color: #d6dbf5;
+  border: none;
 }
