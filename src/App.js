@@ -14,11 +14,10 @@ function App() {
 
   return (
     <div className="App">
-      {/* {!startGame
+      {!startGame
         ? <StartScreen startQuiz={startQuiz} />
         : <Quiz />
-      } */}
-      <Quiz />
+      }
     </div>
   );
 }
