@@ -2,7 +2,6 @@
   "name": "geo-trivia-quiz",
   "version": "0.1.0",
   "private": true,
-  "home": "https://syahrezapratama.github.io/geo-trivia-quiz",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.4",
@@ -17,9 +16,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

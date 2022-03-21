@@ -32,7 +32,7 @@ export default function Quiz() {
     useEffect(() => {
         allQuestions.forEach(question => {
             const optionsArr = [];
-            optionsArr.push(question.correct_answer, ... question.incorrect_answers);
+            optionsArr.push(question.correct_answer, ...question.incorrect_answers);
             const shuffledOptions = arrayShuffle(optionsArr);
 
             setAllAnswers(prevAnswers => {
